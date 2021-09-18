@@ -6,8 +6,9 @@ ARG PREFIX=${PREFIX}
 ARG TOKEN=${TOKEN}
 ARG ACTIVITY=${ACTIVITY}
 
+COPY . .
 RUN yarn install
 
-COPY . .
+ENV NODE_ENV=production
 
 CMD [ "yarn", "start" ]
