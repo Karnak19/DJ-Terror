@@ -7,6 +7,7 @@ ARG TOKEN=${TOKEN}
 ARG ACTIVITY=${ACTIVITY}
 
 COPY . .
+RUN apk add python make gcc g++
 RUN yarn install
 
 ENV NODE_ENV=production
