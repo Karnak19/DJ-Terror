@@ -6,7 +6,7 @@ ARG PREFIX=${PREFIX}
 ARG TOKEN=${TOKEN}
 ARG ACTIVITY=${ACTIVITY}
 
-RUN yarn
+RUN yarn install
 
 COPY . .
 
