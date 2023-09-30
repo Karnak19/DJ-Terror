@@ -1,18 +1,27 @@
+const { EmbedBuilder } = require('discord.js');
+const { useMainPlayer, useQueue  } = require('discord-player');
+
 module.exports = {
     name: 'shuffle',
-    aliases: ['sh'],
-    category: 'Music',
-    utilisation: '{prefix}shuffle',
+    description: 'shuffle the track',
+    voiceChannel: true,
 
-    execute(client, message) {
-        if (!message.member.voice.channel) return message.channel.send(`${client.emotes.error} - You're not in a voice channel !`);
+    async execute({ inter }) {
+        const player = useMainPlayer()
 
-        if (message.guild.me.voice.channel && message.member.voice.channel.id !== message.guild.me.voice.channel.id) return message.channel.send(`${client.emotes.error} - You are not in the same voice channel !`);
+const queue = useQueue(inter.guild);
 
-        if (!client.player.getQueue(message)) return message.channel.send(`${client.emotes.error} - No music currently playing !`);
+        if (!queue || !queue.isPlaying()) return inter.editReply({ content: `No music currently playing ${inter.member}... try again ? ❌`, ephemeral: true });
 
-        const success = client.player.shuffle(message);
+        if (!queue.tracks.toArray()[0]) return inter.editReply({ content: `No music in the queue after the current one ${inter.member}... try again ? ❌`, ephemeral: true });
 
-        if (success) message.channel.send(`${client.emotes.success} - Queue shuffled **${client.player.getQueue(message).tracks.length}** song(s) !`);
+        await queue.tracks.shuffle();
+
+        const ShuffleEmbed = new EmbedBuilder()
+        .setColor('#2f3136')
+        .setAuthor({name: `Queue shuffled ${queue.tracks.size} song(s)! ✅` })
+
+
+       return inter.editReply({ embeds: [ShuffleEmbed] });
     },
 };

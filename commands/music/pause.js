@@ -1,20 +1,26 @@
+const { EmbedBuilder } = require('discord.js');
+const { useMainPlayer, useQueue  } = require('discord-player');
+
 module.exports = {
     name: 'pause',
-    aliases: [],
-    category: 'Music',
-    utilisation: '{prefix}pause',
+    description: 'pause the track',
+    voiceChannel: true,
 
-    execute(client, message) {
-        if (!message.member.voice.channel) return message.channel.send(`${client.emotes.error} - You're not in a voice channel !`);
+    execute({ inter }) {
+const queue = useQueue(inter.guild);
+        const player = useMainPlayer()
 
-        if (message.guild.me.voice.channel && message.member.voice.channel.id !== message.guild.me.voice.channel.id) return message.channel.send(`${client.emotes.error} - You are not in the same voice channel !`);
+        if (!queue) return inter.editReply({ content: `No music currently playing ${inter.member}... try again ? ❌`, ephemeral: true });
+        
+        if(queue.node.isPaused()) return inter.editReply({content: `The track is currently paused, ${inter.member}... try again ? ❌`, ephemeral: true})
 
-        if (!client.player.getQueue(message)) return message.channel.send(`${client.emotes.error} - No music currently playing !`);
-
-        if (client.player.getQueue(message).paused) return message.channel.send(`${client.emotes.error} - The music is already paused !`);
-
-        const success = client.player.pause(message);
-
-        if (success) message.channel.send(`${client.emotes.success} - Song ${client.player.getQueue(message).playing.title} paused !`);
+        const success = queue.node.setPaused(true);
+        
+        const PauseEmbed = new EmbedBuilder()
+        .setAuthor({name: success ? `Current music ${queue.currentTrack.title} paused ✅` : `Something went wrong ${inter.member}... try again ? ❌` })
+        .setColor('#2f3136')
+        
+        return inter.editReply({ embeds: [PauseEmbed] });
     },
 };
+// embed update stoped here

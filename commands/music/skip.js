@@ -1,18 +1,26 @@
+const { EmbedBuilder } = require('discord.js');
+const { useMainPlayer, useQueue  } = require('discord-player');
+
 module.exports = {
     name: 'skip',
-    aliases: ['sk'],
-    category: 'Music',
-    utilisation: '{prefix}skip',
+    description: 'skip the track',
+    voiceChannel: true,
 
-    execute(client, message) {
-        if (!message.member.voice.channel) return message.channel.send(`${client.emotes.error} - You're not in a voice channel !`);
+    execute({ inter }) {
+        const player = useMainPlayer()
 
-        if (message.guild.me.voice.channel && message.member.voice.channel.id !== message.guild.me.voice.channel.id) return message.channel.send(`${client.emotes.error} - You are not in the same voice channel !`);
+const queue = useQueue(inter.guild);
 
-        if (!client.player.getQueue(message)) return message.channel.send(`${client.emotes.error} - No music currently playing !`);
+         if (!queue || !queue.isPlaying()) return inter.editReply({ content:`No music currently playing ${inter.member}... try again ? ❌`, ephemeral: true });
 
-        const success = client.player.skip(message);
+        const success = queue.node.skip();
 
-        if (success) message.channel.send(`${client.emotes.success} - The current music has just been **skipped** !`);
+        const SkipEmbed = new EmbedBuilder()
+        .setColor('#2f3136')
+        .setAuthor({name: success ? `Current music ${queue.currentTrack.title} skipped ✅` : `Something went wrong ${inter.member}... try again ? ❌` })
+
+
+       return inter.editReply({ embeds: [SkipEmbed] });
+
     },
 };

@@ -1,20 +1,28 @@
+const { EmbedBuilder } = require('discord.js');
+const { useMainPlayer, useQueue  } = require('discord-player');
+
 module.exports = {
     name: 'resume',
-    aliases: [],
-    category: 'Music',
-    utilisation: '{prefix}resume',
+    description: 'play the track',
+    voiceChannel: true,
 
-    execute(client, message) {
-        if (!message.member.voice.channel) return message.channel.send(`${client.emotes.error} - You're not in a voice channel !`);
+    execute({ inter }) {
+        const player = useMainPlayer()
 
-        if (message.guild.me.voice.channel && message.member.voice.channel.id !== message.guild.me.voice.channel.id) return message.channel.send(`${client.emotes.error} - You are not in the same voice channel !`);
+const queue = useQueue(inter.guild);
 
-        if (!client.player.getQueue(message)) return message.channel.send(`${client.emotes.error} - No music currently playing !`);
+        if (!queue) return inter.editReply({ content: `No music currently playing ${inter.member}... try again ? ❌`, ephemeral: true });
+        
 
-        if (!client.player.getQueue(message).paused) return message.channel.send(`${client.emotes.error} - The music is already playing !`);
+        if(queue.node.isPlaying()) return inter.editReply({content: `The track is already running, ${inter.member}... try again ? ❌`, ephemeral: true})
 
-        const success = client.player.resume(message);
+        const success = queue.node.resume();
+        
+        const ResumeEmbed = new EmbedBuilder()
+        .setAuthor({name: success ? `Current music ${queue.currentTrack.title} resumed ✅` : `Something went wrong ${inter.member}... try again ? ❌` })
+        .setColor('#2f3136')
+        
+        return inter.editReply({ embeds: [ResumeEmbed] });
 
-        if (success) message.channel.send(`${client.emotes.success} - Song ${client.player.getQueue(message).playing.title} resumed !`);
     },
 };
